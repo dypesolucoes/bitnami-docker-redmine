@@ -10,8 +10,10 @@ RUN bitnami-pkg install git-2.24.1-0 --checksum 0bd650ac89eff766d64b3d19145ba698
 RUN bitnami-pkg unpack redmine-4.1.0-0 --checksum c69bfc2dea34a9079d448c8beef4619927a761900c67a893630be88f0cd830ba
 
 COPY rootfs /
+COPY dype /opt/bitnami/redmine/public/javascripts/dype
 
 RUN patch -p0 -d /opt/bitnami/redmine -i /dype.patch
+RUN git clone https://github.com/rgtk/redmine_editauthor.git /opt/bitnami/redmine/plugins/redmine_editauthor
 
 ENV BITNAMI_APP_NAME="redmine" \
     BITNAMI_IMAGE_VERSION="4.1.0-debian-9-r5" \

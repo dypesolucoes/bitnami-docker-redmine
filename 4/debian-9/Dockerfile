@@ -12,6 +12,9 @@ RUN apt-get update; \
 	apt-get install patch
 
 COPY rootfs /
+
+RUN cd /opt/bitnami/redmine/; \ patch -p0 -i /dype.patch
+
 ENV BITNAMI_APP_NAME="redmine" \
     BITNAMI_IMAGE_VERSION="4.0.5-debian-9-r25" \
     PATH="/opt/bitnami/ruby/bin:/opt/bitnami/postgresql/bin:/opt/bitnami/mysql/bin:/opt/bitnami/git/bin:$PATH" \

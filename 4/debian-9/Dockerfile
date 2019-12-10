@@ -11,7 +11,7 @@ RUN bitnami-pkg unpack redmine-4.1.0-0 --checksum c69bfc2dea34a9079d448c8beef461
 
 COPY rootfs /
 
-RUN cd /opt/bitnami/redmine/; \ patch -p0 -i /dype.patch
+RUN patch -p0 -d /opt/bitnami/redmine -i /dype.patch
 
 ENV BITNAMI_APP_NAME="redmine" \
     BITNAMI_IMAGE_VERSION="4.1.0-debian-9-r5" \

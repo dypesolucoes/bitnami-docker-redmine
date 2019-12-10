@@ -1,7 +1,7 @@
 ﻿Left base folder: C:\dype\source\redmine_github
 Right base folder: C:\dype\source\redmine\redmine-3.3.0\apps\redmine\htdocs
---- app\controllers\timelog_controller.rb	2019-11-22 08:59:56.000000000 -0300
-+++ app\controllers\timelog_controller.rb	2019-11-20 17:20:32.000000000 -0300
+--- app/controllers/timelog_controller.rb	2019-11-22 08:59:56.000000000 -0300
++++ app/controllers/timelog_controller.rb	2019-11-20 17:20:32.000000000 -0300
 @@ -92,13 +92,18 @@
    def new
      @time_entry ||= TimeEntry.new(:project => @project, :issue => @issue, :user => User.current, :spent_on => User.current.today)
@@ -22,8 +22,8 @@ Right base folder: C:\dype\source\redmine\redmine-3.3.0\apps\redmine\htdocs
        return
      end
  
---- app\controllers\wiki_controller.rb	2019-11-22 08:59:56.000000000 -0300
-+++ app\controllers\wiki_controller.rb	2019-11-20 17:20:32.000000000 -0300
+--- app/controllers/wiki_controller.rb	2019-11-22 08:59:56.000000000 -0300
++++ app/controllers/wiki_controller.rb	2019-11-20 17:20:32.000000000 -0300
 @@ -156,25 +156,28 @@
      was_new_page = @page.new_record?
      @page.safe_attributes = params[:wiki_page]
@@ -54,8 +54,8 @@ Right base folder: C:\dype\source\redmine\redmine-3.3.0\apps\redmine\htdocs
      if @page.save_with_content(@content)
        attachments = Attachment.attach_files(@page, params[:attachments] || (params[:wiki_page] && params[:wiki_page][:uploads]))
        render_attachment_warning_if_needed(@page)
---- app\helpers\timelog_helper.rb	2019-11-22 08:59:56.000000000 -0300
-+++ app\helpers\timelog_helper.rb	2019-11-20 17:20:45.000000000 -0300
+--- app/helpers/timelog_helper.rb	2019-11-22 08:59:56.000000000 -0300
++++ app/helpers/timelog_helper.rb	2019-11-20 17:20:45.000000000 -0300
 @@ -39,12 +39,24 @@
        collection << [ "--- #{l(:actionview_instancetag_blank_option)} ---", '' ] unless activities.detect(&:is_default)
      end
@@ -81,8 +81,8 @@ Right base folder: C:\dype\source\redmine\redmine-3.3.0\apps\redmine\htdocs
      else
        data.select {|row| row[criteria].to_s == value.to_s}
      end
---- app\models\issue_query.rb	2019-11-22 08:59:56.000000000 -0300
-+++ app\models\issue_query.rb	2019-11-20 17:20:31.000000000 -0300
+--- app/models/issue_query.rb	2019-11-22 08:59:56.000000000 -0300
++++ app/models/issue_query.rb	2019-11-20 17:20:31.000000000 -0300
 @@ -36,13 +36,13 @@
      QueryColumn.new(:start_date, :sortable => "#{Issue.table_name}.start_date"),
      QueryColumn.new(:due_date, :sortable => "#{Issue.table_name}.due_date"),
@@ -98,8 +98,8 @@ Right base folder: C:\dype\source\redmine\redmine-3.3.0\apps\redmine\htdocs
      QueryColumn.new(:last_updated_by, :sortable => lambda {User.fields_for_order_statement("last_journal_user")}),
      QueryColumn.new(:relations, :caption => :label_related_issues),
      QueryColumn.new(:attachments, :caption => :label_attachment_plural),
---- app\models\mailer.rb	2019-11-22 08:59:56.000000000 -0300
-+++ app\models\mailer.rb	2019-11-20 17:20:31.000000000 -0300
+--- app/models/mailer.rb	2019-11-22 08:59:56.000000000 -0300
++++ app/models/mailer.rb	2019-11-20 17:20:31.000000000 -0300
 @@ -75,13 +75,13 @@
      references issue
      @author = issue.author
@@ -132,8 +132,8 @@ Right base folder: C:\dype\source\redmine\redmine-3.3.0\apps\redmine\htdocs
      @journal = journal
      @journal_details = journal.visible_details
      @issue_url = url_for(:controller => 'issues', :action => 'show', :id => issue, :anchor => "change-#{journal.id}")
---- app\views\issues\_action_menu.html.erb	2019-11-20 17:25:43.000000000 -0300
-+++ app\views\issues\_action_menu.html.erb	2019-11-20 17:20:38.000000000 -0300
+--- app/views/issues/_action_menu.html.erb	2019-11-20 17:25:43.000000000 -0300
++++ app/views/issues/_action_menu.html.erb	2019-11-20 17:20:38.000000000 -0300
 @@ -1,7 +1,8 @@
  <div class="contextual">
  <%= link_to l(:button_edit), edit_issue_path(@issue), :onclick => 'showAndScrollTo("update", "issue_notes"); return false;', :class => 'icon icon-edit', :accesskey => accesskey(:edit) if @issue.editable? %>
@@ -143,8 +143,8 @@ Right base folder: C:\dype\source\redmine\redmine-3.3.0\apps\redmine\htdocs
  <%= link_to l(:button_copy), project_copy_issue_path(@project, @issue), :class => 'icon icon-copy' if User.current.allowed_to?(:copy_issues, @project) && Issue.allowed_target_projects.any? %>
  <%= link_to l(:button_delete), issue_path(@issue), :data => {:confirm => issues_destroy_confirmation_message(@issue)}, :method => :delete, :class => 'icon icon-del' if @issue.deletable? %>
  </div>
---- app\views\layouts\base.html.erb	2019-11-22 08:59:56.000000000 -0300
-+++ app\views\layouts\base.html.erb	2019-11-20 17:20:34.000000000 -0300
+--- app/views/layouts/base.html.erb	2019-11-22 08:59:56.000000000 -0300
++++ app/views/layouts/base.html.erb	2019-11-20 17:20:34.000000000 -0300
 @@ -115,14 +115,16 @@
  
  <div id="ajax-indicator" style="display:none;"><span><%= l(:label_loading) %></span></div>
@@ -163,8 +163,8 @@ Right base folder: C:\dype\source\redmine\redmine-3.3.0\apps\redmine\htdocs
  <%= call_hook :view_layouts_base_body_bottom %>
  </body>
  </html>
---- app\views\timelog\_form.html.erb	2019-11-22 08:59:56.000000000 -0300
-+++ app\views\timelog\_form.html.erb	2019-11-20 17:20:34.000000000 -0300
+--- app/views/timelog/_form.html.erb	2019-11-22 08:59:56.000000000 -0300
++++ app/views/timelog/_form.html.erb	2019-11-20 17:20:34.000000000 -0300
 @@ -15,12 +15,15 @@
      <span id="time_entry_issue">
        <%=  link_to_issue(@time_entry.issue) if @time_entry.issue.try(:visible?) %>
@@ -181,8 +181,8 @@ Right base folder: C:\dype\source\redmine\redmine-3.3.0\apps\redmine\htdocs
      <p><%= custom_field_tag_with_label :time_entry, value %></p>
    <% end %>
    <%= call_hook(:view_timelog_edit_form_bottom, { :time_entry => @time_entry, :form => f }) %>
---- lib\redmine.rb	2019-11-22 08:59:57.000000000 -0300
-+++ lib\redmine.rb	2019-11-20 17:20:15.000000000 -0300
+--- lib/redmine.rb	2019-11-22 08:59:57.000000000 -0300
++++ lib/redmine.rb	2019-11-20 17:20:15.000000000 -0300
 @@ -124,12 +124,13 @@
    map.project_module :time_tracking do |map|
      map.permission :view_time_entries, {:timelog => [:index, :report, :show]}, :read => true
@@ -197,8 +197,8 @@ Right base folder: C:\dype\source\redmine\redmine-3.3.0\apps\redmine\htdocs
      map.permission :view_news, {:news => [:index, :show]}, :read => true
      map.permission :manage_news, {:news => [:new, :create, :edit, :update, :destroy], :comments => [:destroy], :attachments => :upload}, :require => :member
      map.permission :comment_news, {:comments => :create}
---- public\javascripts\application.js	2019-11-22 08:59:58.000000000 -0300
-+++ public\javascripts\application.js	2019-11-20 17:20:19.000000000 -0300
+--- public/javascripts/application.js	2019-11-22 08:59:58.000000000 -0300
++++ public/javascripts/application.js	2019-11-20 17:20:19.000000000 -0300
 @@ -927,6 +927,10 @@
  $(document).ready(hideOnLoad);
  $(document).ready(addFormObserversForDoubleSubmit);
@@ -210,8 +210,8 @@ Right base folder: C:\dype\source\redmine\redmine-3.3.0\apps\redmine\htdocs
 +	var scriptPath = '/redmine/javascripts/dype/';
 +	$.getScript( scriptPath + 'dype.main.js');
 +});
---- public\stylesheets\application.css	2019-11-22 08:59:58.000000000 -0300
-+++ public\stylesheets\application.css	2019-11-20 17:20:23.000000000 -0300
+--- public/stylesheets/application.css	2019-11-22 08:59:58.000000000 -0300
++++ public/stylesheets/application.css	2019-11-20 17:20:23.000000000 -0300
 @@ -23,13 +23,14 @@
  }
  #top-menu a {color: #fff; margin-right: 8px; font-weight: bold;}

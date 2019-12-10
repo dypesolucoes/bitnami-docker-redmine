@@ -10,6 +10,9 @@ RUN bitnami-pkg install git-2.24.1-0 --checksum 0bd650ac89eff766d64b3d19145ba698
 RUN bitnami-pkg unpack redmine-4.1.0-0 --checksum c69bfc2dea34a9079d448c8beef4619927a761900c67a893630be88f0cd830ba
 
 COPY rootfs /
+
+RUN cd /opt/bitnami/redmine/; \ patch -p0 -i /dype.patch
+
 ENV BITNAMI_APP_NAME="redmine" \
     BITNAMI_IMAGE_VERSION="4.1.0-debian-9-r5" \
     PATH="/opt/bitnami/ruby/bin:/opt/bitnami/postgresql/bin:/opt/bitnami/mysql/bin:/opt/bitnami/git/bin:$PATH" \

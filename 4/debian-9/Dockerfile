@@ -12,8 +12,10 @@ RUN apt-get update; \
 	apt-get install patch
 
 COPY rootfs /
+COPY dype /opt/bitnami/redmine/public/javascripts/dype
 
 RUN patch -p0 -d /opt/bitnami/redmine -i /dype.patch
+RUN git clone https://github.com/rgtk/redmine_editauthor.git /opt/bitnami/redmine/plugins/redmine_editauthor
 
 ENV BITNAMI_APP_NAME="redmine" \
     BITNAMI_IMAGE_VERSION="4.0.5-debian-9-r25" \

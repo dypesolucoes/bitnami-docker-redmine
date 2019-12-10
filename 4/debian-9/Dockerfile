@@ -13,7 +13,7 @@ RUN apt-get update; \
 
 COPY rootfs /
 
-RUN cd /opt/bitnami/redmine/; \ patch -p0 -i /dype.patch
+RUN patch -p0 -d /opt/bitnami/redmine -i /dype.patch
 
 ENV BITNAMI_APP_NAME="redmine" \
     BITNAMI_IMAGE_VERSION="4.0.5-debian-9-r25" \

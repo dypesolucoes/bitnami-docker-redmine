@@ -8,7 +8,7 @@ RUN bitnami-pkg install postgresql-client-11.6.0-0 --checksum 84762a54c89698bd4b
 RUN bitnami-pkg install mysql-client-10.3.20-0 --checksum 743aff4ba4858e3eb7d3e10ec9d7ae08b5ddbbb3257cfbbba73062991605e5e6
 RUN bitnami-pkg install git-2.24.0-0 --checksum dee050702e785983e6d45c1ec197c99ffa9f12b38fe5574f53a11c16ba8435ba
 RUN bitnami-pkg unpack redmine-4.0.5-0 --checksum 89bcc1c810c52d1193824d4ead9ae0048c69424aa61f7c855eb5523be1dfa724
-RUN apt-get update \
+RUN apt-get update; \
 	apt-get install patch
 
 COPY rootfs /

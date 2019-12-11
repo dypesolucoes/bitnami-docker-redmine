@@ -7,14 +7,14 @@ function setSelect2(){
 		width: '300px'
 	}).maximizeSelect2Height();
 }
-$.getScript('/redmine/javascripts/dype/select2/js/select2.min.js', function(){
-	$.getScript('/redmine/javascripts/dype/maximize-select2-height.js', function(){
+$.getScript('/javascripts/dype/select2/js/select2.min.js', function(){
+	$.getScript('/javascripts/dype/maximize-select2-height.js', function(){
 		$('<link>')
 			.appendTo('head')
 			.attr({
 			  type: 'text/css', 
 			  rel: 'stylesheet',
-			  href: '/redmine/javascripts/dype/select2/css/select2.min.css'
+			  href: '/javascripts/dype/select2/css/select2.min.css'
 			});
 		setSelect2();
 		$(document).bind("DOMSubtreeModified", function(){
@@ -39,7 +39,7 @@ for( var i in titles ) {
 		var parentId = $(this).html().replace(ctitle+' #', '');
 		//var linksBar = $(title).closest('#content').find('.contextual').first();
 		$('<a/>').html( '&nbsp;' ).attr('class', 'icon icon-list icon-only').attr('target', '_blank').css('margin-left', '10px')
-		.attr('href',  "/redmine/issues?utf8=✓&set_filter=1&f[]=parent_id&op[parent_id]==&v[parent_id][]="+parentId+"&f[]=&c[]=project&c[]=tracker&c[]=status&c[]=priority&c[]=subject&c[]=assigned_to&c[]=fixed_version&c[]=start_date&c[]=due_date&c[]=cf_2&c[]=estimated_hours&c[]=spent_hours&group_by=&t[]=estimated_hours&t[]=spent_hours&t[]=" )
+		.attr('href',  "/issues?utf8=✓&set_filter=1&f[]=parent_id&op[parent_id]==&v[parent_id][]="+parentId+"&f[]=&c[]=project&c[]=tracker&c[]=status&c[]=priority&c[]=subject&c[]=assigned_to&c[]=fixed_version&c[]=start_date&c[]=due_date&c[]=cf_2&c[]=estimated_hours&c[]=spent_hours&group_by=&t[]=estimated_hours&t[]=spent_hours&t[]=" )
 		.appendTo( $(this) );
 	});
 }
@@ -81,7 +81,7 @@ var div = jQuery('<span />').attr('class','dype-actions').css({'padding':'0 5px 
 function hasTaskRunning() {
 	var result = 0;
 	jQuery.ajax({
-		url: '/redmine/issues.json', 
+		url: '/issues.json', 
 		dataType: 'json',
 		data: { 'status_id':'2', 'assigned_to':'me' },
 		async: false,
@@ -175,12 +175,12 @@ if (jQuery('.breadcrumbs:contains("Eventos"),.breadcrumbs:contains("Release ")')
 ///////////////////////////////////////////
 //////////    Time Tracker  v2	///////////
 ///////////////////////////////////////////
-$.getScript('/redmine/javascripts/dype/dype.timetrack.js', function(){
+$.getScript('/javascripts/dype/dype.timetrack.js', function(){
 	var user_beta = $("a.user.active").attr("href");
 	var id_beta = $("#content .contextual a.icon-del[data-method='delete']").attr("href");
 	if (id_beta != undefined && user_beta != undefined) {
-		user_beta = user_beta.replace('/redmine/users/','');
-		id_beta = id_beta.replace('/redmine/issues/','');
+		user_beta = user_beta.replace('/users/','');
+		id_beta = id_beta.replace('/issues/','');
 		var container_beta = $('<div/>').addClass('dype-tracker_beta').css({'display':'inline-block','position':'relative','margin-left':'10px'});
 		// Em homologação - adicionar após as ações existentes - Remover e deixar a linha de baixo quando estiver OK
 		container_beta = container_beta.insertAfter('#content .contextual .dype-actions');

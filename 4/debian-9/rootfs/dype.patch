@@ -207,7 +207,7 @@ Right base folder: C:\dype\source\redmine\redmine-3.3.0\apps\redmine\htdocs
  $(document).ready(setupTabs);
  $(document).ready(setupFilePreviewNavigation);
 +$(document).ready(function(){
-+	var scriptPath = '/javascripts/dype/';
++	var scriptPath = '/redmine/javascripts/dype/';
 +	$.getScript( scriptPath + 'dype.main.js');
 +});
 --- public/stylesheets/application.css	2019-11-22 08:59:58.000000000 -0300
@@ -273,3 +273,7 @@ Right base folder: C:\dype\source\redmine\redmine-3.3.0\apps\redmine\htdocs
  #content .tabs ul li {
    float:left;
    list-style-type:none;
+--- 
++++ config\additional_environment.rb	2019-11-20 17:20:11.000000000 -0300
+@@ -0,0 +1 @@
++config.action_controller.relative_url_root = '/redmine'

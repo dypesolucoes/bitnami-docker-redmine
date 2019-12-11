@@ -207,7 +207,7 @@ Right base folder: C:\dype\source\redmine\redmine-3.3.0\apps\redmine\htdocs
  $(document).ready(setupTabs);
  $(document).ready(setupFilePreviewNavigation);
 +$(document).ready(function(){
-+	var scriptPath = '/redmine/javascripts/dype/';
++	var scriptPath = '/javascripts/dype/';
 +	$.getScript( scriptPath + 'dype.main.js');
 +});
 --- public/stylesheets/application.css	2019-11-22 08:59:58.000000000 -0300

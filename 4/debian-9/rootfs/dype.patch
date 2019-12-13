@@ -98,6 +98,28 @@ Right base folder: C:\dype\source\redmine\redmine-3.3.0\apps\redmine\htdocs
      QueryColumn.new(:last_updated_by, :sortable => lambda {User.fields_for_order_statement("last_journal_user")}),
      QueryColumn.new(:relations, :caption => :label_related_issues),
      QueryColumn.new(:attachments, :caption => :label_attachment_plural),
+@@ -264,12 +264,21 @@
+ 
+   # Returns sum of all the issue's estimated_hours
+   def total_for_estimated_hours(scope)
+     map_total(scope.sum(:estimated_hours)) {|t| t.to_f.round(2)}
+   end
+ 
++  # Returns sum of all the issue's total_estimated_hours
++  def total_for_total_estimated_hours(scope)
++    total = scope.sum("COALESCE((SELECT SUM(estimated_hours) FROM #{Issue.table_name} subtasks" +
++      " WHERE subtasks.root_id = #{Issue.table_name}.root_id AND subtasks.lft >= #{Issue.table_name}.lft AND subtasks.rgt <= #{Issue.table_name}.rgt), 0)")
++
++
++    map_total(total) {|t| t.to_f.round(2)}
++  end
++
+   # Returns sum of all the issue's time entries hours
+   def total_for_spent_hours(scope)
+     total = scope.joins(:time_entries).
+       where(TimeEntry.visible_condition(User.current)).
+       sum("#{TimeEntry.table_name}.hours")
+ 
 --- app/models/mailer.rb	2019-11-22 08:59:56.000000000 -0300
 +++ app/models/mailer.rb	2019-11-20 17:20:31.000000000 -0300
 @@ -75,13 +75,13 @@

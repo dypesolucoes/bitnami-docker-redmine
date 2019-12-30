@@ -164,7 +164,7 @@ Right base folder: C:\dype\source\redmine\redmine-3.3.0\apps\redmine\htdocs
  
 --- public/javascripts/application.js	2019-11-22 08:59:58.000000000 -0300
 +++ public/javascripts/application.js	2019-11-20 17:20:19.000000000 -0300
-@@ -1063,5 +1063,8 @@
+@@ -1063,5 +1063,9 @@
  $(document).ready(setupTabs);
  $(document).ready(setupFilePreviewNavigation);
  $(document).on('focus', '[data-auto-complete=true]', function(event) {

@@ -2,20 +2,20 @@
 Right base folder: C:\dype\source\redmine\redmine-3.3.0\apps\redmine\htdocs
 --- app/controllers/timelog_controller.rb	2019-11-22 08:59:56.000000000 -0300
 +++ app/controllers/timelog_controller.rb	2019-11-20 17:20:32.000000000 -0300
-@@ -92,13 +92,18 @@
+@@ -96,13 +96,18 @@
    def new
-     @time_entry ||= TimeEntry.new(:project => @project, :issue => @issue, :user => User.current, :spent_on => User.current.today)
+     @time_entry ||= TimeEntry.new(:project => @project, :issue => @issue, :author => User.current, :spent_on => User.current.today)
      @time_entry.safe_attributes = params[:time_entry]
    end
  
    def create
--    @time_entry ||= TimeEntry.new(:project => @project, :issue => @issue, :user => User.current, :spent_on => User.current.today)
+-    @time_entry ||= TimeEntry.new(:project => @project, :issue => @issue, :author => User.current, :user => User.current, :spent_on => User.current.today)
 +    if request.post? and params[:time_entry][:user_id]
 +      user = User.find(params[:time_entry][:user_id])
 +    else
 +      user = User.current
 +    end
-+    @time_entry ||= TimeEntry.new(:project => @project, :issue => @issue, :user => user, :spent_on => User.current.today)
++    @time_entry ||= TimeEntry.new(:project => @project, :issue => @issue, :author => user, :user => user, :spent_on => User.current.today)
      @time_entry.safe_attributes = params[:time_entry]
      if @time_entry.project && !User.current.allowed_to?(:log_time, @time_entry.project)
        render_403
@@ -24,7 +24,7 @@ Right base folder: C:\dype\source\redmine\redmine-3.3.0\apps\redmine\htdocs
  
 --- app/controllers/wiki_controller.rb	2019-11-22 08:59:56.000000000 -0300
 +++ app/controllers/wiki_controller.rb	2019-11-20 17:20:32.000000000 -0300
-@@ -156,25 +156,28 @@
+@@ -158,25 +158,28 @@
      was_new_page = @page.new_record?
      @page.safe_attributes = params[:wiki_page]
  
@@ -54,51 +54,24 @@ Right base folder: C:\dype\source\redmine\redmine-3.3.0\apps\redmine\htdocs
      if @page.save_with_content(@content)
        attachments = Attachment.attach_files(@page, params[:attachments] || (params[:wiki_page] && params[:wiki_page][:uploads]))
        render_attachment_warning_if_needed(@page)
---- app/helpers/timelog_helper.rb	2019-11-22 08:59:56.000000000 -0300
-+++ app/helpers/timelog_helper.rb	2019-11-20 17:20:45.000000000 -0300
-@@ -39,12 +39,24 @@
-       collection << [ "--- #{l(:actionview_instancetag_blank_option)} ---", '' ] unless activities.detect(&:is_default)
-     end
-     activities.each { |a| collection << [a.name, a.id] }
-     collection
-   end
- 
-+  def user_collection_for_select_options(project, selected = nil)
-+    collection = project.members.map{ |member| member.user }
-+    collection.keep_if{ |user| user.allowed_to?(:log_time, project) }
-+    s = ''
-+    s << content_tag('option', "<< #{l(:label_me)} >>", :value => User.current.id) if User.current.admin? || collection.include?(User.current)
-+    collection.sort.each do |element|
-+      selected_attribute = ' selected="selected"' if option_value_selected?(element, selected)
-+      s << %(<option value="#{element.id}"#{selected_attribute}>#{h element.name}</option>)
-+    end
-+    s.html_safe
-+  end
-+
-   def select_hours(data, criteria, value)
-     if value.to_s.empty?
-       data.select {|row| row[criteria].blank? }
-     else
-       data.select {|row| row[criteria].to_s == value.to_s}
-     end
 --- app/models/issue_query.rb	2019-11-22 08:59:56.000000000 -0300
 +++ app/models/issue_query.rb	2019-11-20 17:20:31.000000000 -0300
-@@ -36,13 +36,13 @@
-     QueryColumn.new(:start_date, :sortable => "#{Issue.table_name}.start_date"),
-     QueryColumn.new(:due_date, :sortable => "#{Issue.table_name}.due_date"),
-     QueryColumn.new(:estimated_hours, :sortable => "#{Issue.table_name}.estimated_hours", :totalable => true),
-     QueryColumn.new(:total_estimated_hours,
-       :sortable => -> { "COALESCE((SELECT SUM(estimated_hours) FROM #{Issue.table_name} subtasks" +
-         " WHERE #{Issue.visible_condition(User.current).gsub(/\bissues\b/, 'subtasks')} AND subtasks.root_id = #{Issue.table_name}.root_id AND subtasks.lft >= #{Issue.table_name}.lft AND subtasks.rgt <= #{Issue.table_name}.rgt), 0)" },
+@@ -42,13 +42,13 @@
+     QueryColumn.new(
+       :total_estimated_hours,
+       :sortable => -> {
+                      "COALESCE((SELECT SUM(estimated_hours) FROM #{Issue.table_name} subtasks" +
+         " WHERE #{Issue.visible_condition(User.current).gsub(/\bissues\b/, 'subtasks')} AND subtasks.root_id = #{Issue.table_name}.root_id AND subtasks.lft >= #{Issue.table_name}.lft AND subtasks.rgt <= #{Issue.table_name}.rgt), 0)"
+                    },
 -      :default_order => 'desc'),
 +      :default_order => 'desc', :totalable => true),
      QueryColumn.new(:done_ratio, :sortable => "#{Issue.table_name}.done_ratio", :groupable => true),
-     QueryColumn.new(:created_on, :sortable => "#{Issue.table_name}.created_on", :default_order => 'desc'),
-     QueryColumn.new(:closed_on, :sortable => "#{Issue.table_name}.closed_on", :default_order => 'desc'),
+     TimestampQueryColumn.new(:created_on, :sortable => "#{Issue.table_name}.created_on", :default_order => 'desc', :groupable => true),
+     TimestampQueryColumn.new(:closed_on, :sortable => "#{Issue.table_name}.closed_on", :default_order => 'desc', :groupable => true),
      QueryColumn.new(:last_updated_by, :sortable => lambda {User.fields_for_order_statement("last_journal_user")}),
      QueryColumn.new(:relations, :caption => :label_related_issues),
      QueryColumn.new(:attachments, :caption => :label_attachment_plural),
-@@ -264,12 +264,21 @@
+@@ -302,12 +302,21 @@
  
    # Returns sum of all the issue's estimated_hours
    def total_for_estimated_hours(scope)
@@ -122,22 +95,24 @@ Right base folder: C:\dype\source\redmine\redmine-3.3.0\apps\redmine\htdocs
  
 --- app/models/mailer.rb	2019-11-22 08:59:56.000000000 -0300
 +++ app/models/mailer.rb	2019-11-20 17:20:31.000000000 -0300
-@@ -75,13 +75,13 @@
+@@ -77,14 +77,14 @@
+     message_id issue
      references issue
      @author = issue.author
      @issue = issue
      @user = user
      @issue_url = url_for(:controller => 'issues', :action => 'show', :id => issue)
+-    subject = "[#{issue.project.name} - #{issue.tracker.name} ##{issue.id}]"
+-    subject += " (#{issue.status.name})" if Setting.show_status_changes_in_mail_subject?
++    subject = "(#{issue.project.name} - #{issue.tracker.name} ##{issue.id})"
++    subject += " [#{issue.status.name}]" if Setting.show_status_changes_in_mail_subject?
+     subject += " #{issue.subject}"
      mail :to => user,
--      :subject => "[#{issue.project.name} - #{issue.tracker.name} ##{issue.id}] (#{issue.status.name}) #{issue.subject}"
-+      :subject => "(#{issue.project.name} - #{issue.tracker.name} ##{issue.id}) [#{issue.status.name}] #{issue.subject}"
+       :subject => subject
    end
  
    # Notifies users about a new issue.
-   #
-   # Example:
-   #   Mailer.deliver_issue_add(issue)
-@@ -99,14 +99,14 @@
+@@ -106,14 +106,14 @@
                      'Issue-Id' => issue.id,
                      'Issue-Author' => issue.author.login
      redmine_headers 'Issue-Assignee' => issue.assigned_to.login if issue.assigned_to
@@ -145,10 +120,10 @@ Right base folder: C:\dype\source\redmine\redmine-3.3.0\apps\redmine\htdocs
      references issue
      @author = journal.user
 -    s = "[#{issue.project.name} - #{issue.tracker.name} ##{issue.id}] "
--    s << "(#{issue.status.name}) " if journal.new_value_for('status_id')
+-    s += "(#{issue.status.name}) " if journal.new_value_for('status_id') && Setting.show_status_changes_in_mail_subject?
 +    s = "(#{issue.project.name} - #{issue.tracker.name} ##{issue.id}) "
-+    s << "[#{issue.status.name}] " if journal.new_value_for('status_id')
-     s << issue.subject
++    s += "[#{issue.status.name}] " if journal.new_value_for('status_id') && Setting.show_status_changes_in_mail_subject?
+     s += issue.subject
      @issue = issue
      @user = user
      @journal = journal
@@ -156,85 +131,52 @@ Right base folder: C:\dype\source\redmine\redmine-3.3.0\apps\redmine\htdocs
      @issue_url = url_for(:controller => 'issues', :action => 'show', :id => issue, :anchor => "change-#{journal.id}")
 --- app/views/issues/_action_menu.html.erb	2019-11-20 17:25:43.000000000 -0300
 +++ app/views/issues/_action_menu.html.erb	2019-11-20 17:20:38.000000000 -0300
-@@ -1,7 +1,8 @@
+@@ -1,10 +1,11 @@
  <div class="contextual">
- <%= link_to l(:button_edit), edit_issue_path(@issue), :onclick => 'showAndScrollTo("update", "issue_notes"); return false;', :class => 'icon icon-edit', :accesskey => accesskey(:edit) if @issue.editable? %>
+ <%= link_to l(:button_edit), edit_issue_path(@issue),
+             :onclick => 'showAndScrollTo("update", "issue_notes"); return false;',
+             :class => 'icon icon-edit', :accesskey => accesskey(:edit) if @issue.editable? %>
 +<a href="javascript:if(confirm('Deseja realmente dividir a tarefa atual em subtarefas?')){window.location='psdype://redminesplitissue?issueId=<%=@issue.id%>'};void(0);" class="icon icon-edit" style="background-image: url('/images/text_list_bullets.png');">Split</a>
- <%= link_to l(:button_log_time), new_issue_time_entry_path(@issue), :class => 'icon icon-time-add' if User.current.allowed_to?(:log_time, @project) %>
+ <%= link_to l(:button_log_time), new_issue_time_entry_path(@issue),
+             :class => 'icon icon-time-add' if User.current.allowed_to?(:log_time, @project) %>
  <%= watcher_link(@issue, User.current) %>
- <%= link_to l(:button_copy), project_copy_issue_path(@project, @issue), :class => 'icon icon-copy' if User.current.allowed_to?(:copy_issues, @project) && Issue.allowed_target_projects.any? %>
- <%= link_to l(:button_delete), issue_path(@issue), :data => {:confirm => issues_destroy_confirmation_message(@issue)}, :method => :delete, :class => 'icon icon-del' if @issue.deletable? %>
- </div>
+ <%= link_to l(:button_copy), project_copy_issue_path(@project, @issue),
+             :class => 'icon icon-copy' if User.current.allowed_to?(:copy_issues, @project) && Issue.allowed_target_projects.any? %>
+ <%= link_to l(:button_delete), issue_path(@issue),
 --- app/views/layouts/base.html.erb	2019-11-22 08:59:56.000000000 -0300
 +++ app/views/layouts/base.html.erb	2019-11-20 17:20:34.000000000 -0300
-@@ -115,14 +115,16 @@
- 
- <div id="ajax-indicator" style="display:none;"><span><%= l(:label_loading) %></span></div>
- <div id="ajax-modal" style="display:none;"></div>
- 
+@@ -114,13 +115,15 @@
+         <%= yield %>
+         <%= call_hook :view_layouts_base_content %>
+         <div style="clear:both;"></div>
+     </div>
+ </div>
  <div id="footer">
-   <div class="bgl"><div class="bgr">
 -    Powered by <%= link_to Redmine::Info.app_name, Redmine::Info.url %> &copy; 2006-2019 Jean-Philippe Lang
 +    Powered by <%= link_to Redmine::Info.app_name, Redmine::Info.url %> &copy; 2006-2019 Jean-Philippe Lang
 +	<br /><br />
 +	<%= link_to 'Dype Updater', 'http://redmine.dype.com.br/mn/' %>
-   </div></div>
  </div>
  </div>
- </div>
- <%= call_hook :view_layouts_base_body_bottom %>
- </body>
- </html>
---- app/views/timelog/_form.html.erb	2019-11-22 08:59:56.000000000 -0300
-+++ app/views/timelog/_form.html.erb	2019-11-20 17:20:34.000000000 -0300
-@@ -15,12 +15,15 @@
-     <span id="time_entry_issue">
-       <%=  link_to_issue(@time_entry.issue) if @time_entry.issue.try(:visible?) %>
-     </span>
-   </p>
-   <p><%= f.date_field :spent_on, :size => 10, :required => true %><%= calendar_for('time_entry_spent_on') %></p>
-   <p><%= f.hours_field :hours, :size => 6, :required => true %></p>
-+  <% if User.current.allowed_to?(:log_foreign_time, @project) %>
-+  <p><%= f.select :user_id, user_collection_for_select_options(@project, @time_entry.user), :required => true %></p>
-+  <% end %>
-   <p><%= f.text_field :comments, :size => 100, :maxlength => 1024, :required => Setting.timelog_required_fields.include?('comments') %></p>
-   <p><%= f.select :activity_id, activity_collection_for_select_options(@time_entry), :required => true %></p>
-   <% @time_entry.custom_field_values.each do |value| %>
-     <p><%= custom_field_tag_with_label :time_entry, value %></p>
-   <% end %>
-   <%= call_hook(:view_timelog_edit_form_bottom, { :time_entry => @time_entry, :form => f }) %>
---- lib/redmine.rb	2019-11-22 08:59:57.000000000 -0300
-+++ lib/redmine.rb	2019-11-20 17:20:15.000000000 -0300
-@@ -124,12 +124,13 @@
-   map.project_module :time_tracking do |map|
-     map.permission :view_time_entries, {:timelog => [:index, :report, :show]}, :read => true
-     map.permission :log_time, {:timelog => [:new, :create]}, :require => :loggedin
-     map.permission :edit_time_entries, {:timelog => [:edit, :update, :destroy, :bulk_edit, :bulk_update]}, :require => :member
-     map.permission :edit_own_time_entries, {:timelog => [:edit, :update, :destroy,:bulk_edit, :bulk_update]}, :require => :loggedin
-     map.permission :manage_project_activities, {:projects => :settings, :project_enumerations => [:update, :destroy]}, :require => :member
-+    map.permission :log_foreign_time, {:timelog => [:new, :create]}, :require => :member
-   end
  
-   map.project_module :news do |map|
-     map.permission :view_news, {:news => [:index, :show]}, :read => true
-     map.permission :manage_news, {:news => [:new, :create, :edit, :update, :destroy], :comments => [:destroy], :attachments => :upload}, :require => :member
-     map.permission :comment_news, {:comments => :create}
+ <div id="ajax-indicator" style="display:none;"><span><%= l(:label_loading) %></span></div>
+ <div id="ajax-modal" style="display:none;"></div>
+ 
 --- public/javascripts/application.js	2019-11-22 08:59:58.000000000 -0300
 +++ public/javascripts/application.js	2019-11-20 17:20:19.000000000 -0300
-@@ -927,6 +927,10 @@
- $(document).ready(hideOnLoad);
- $(document).ready(addFormObserversForDoubleSubmit);
- $(document).ready(defaultFocus);
- $(document).ready(setupAttachmentDetail);
+@@ -1063,5 +1063,8 @@
  $(document).ready(setupTabs);
  $(document).ready(setupFilePreviewNavigation);
+ $(document).on('focus', '[data-auto-complete=true]', function(event) {
+   inlineAutoComplete(event.target);
+ });
 +$(document).ready(function(){
 +	var scriptPath = '/javascripts/dype/';
 +	$.getScript( scriptPath + 'dype.main.js');
 +});
 --- public/stylesheets/application.css	2019-11-22 08:59:58.000000000 -0300
 +++ public/stylesheets/application.css	2019-11-20 17:20:23.000000000 -0300
-@@ -23,13 +23,14 @@
+@@ -26,13 +26,14 @@
  }
  #top-menu a {color: #fff; margin-right: 8px; font-weight: bold;}
  #top-menu #loggedas { float: right; margin-right: 0.5em; color: #fff; }
@@ -250,37 +192,22 @@ Right base folder: C:\dype\source\redmine\redmine-3.3.0\apps\redmine\htdocs
  
  #quick-search {float:right;}
  #quick-search #q {width:130px; height:24px; box-sizing:border-box; vertical-align:middle; border:1px solid #ccc; border-radius:3px;}
-@@ -79,25 +80,25 @@
- 
+@@ -85,13 +85,13 @@
  #admin-menu ul {margin: 0;  padding: 0;}
  #admin-menu li {margin: 0;  padding: 0 0 6px 0; list-style-type:none;}
  
- #main {background-color:#EEEEEE;}
+ #main {flex-grow: 2; display: flex; flex-direction: row-reverse;}
  
--#sidebar{ float: right; width: 22%; position: relative; z-index: 9; padding: 0; margin: 0;}
--* html #sidebar{ width: 22%; }
-+#sidebar{ float: right; width: 12%; position: relative; z-index: 9; padding: 0; margin: 0;}
-+* html #sidebar{ width: 12%; }
+ #sidebar{ flex-shrink: 0; padding-left: 20px; background: #EEEEEE; border-left: 1px solid #ddd}
+-@media screen and (min-width: 0px) and (max-width: 1089px) {#sidebar{width: 22%;}}
++@media screen and (min-width: 0px) and (max-width: 1089px) {#sidebar{width: 12%;}}
+ @media screen and (min-width: 1090px) and (max-width: 1279px) {#sidebar{width: 240px;}}
+ @media screen and (min-width: 1280px) and (max-width: 1599px) {#sidebar{width: 280px;}}
+ @media screen and (min-width: 1600px) and (max-width: 1919px) {#sidebar{width: 320px;}}
+ @media screen and (min-width: 1920px) and (max-width: 2559px) {#sidebar{width: 360px;}}
+ @media screen and (min-width: 2560px) {#sidebar{width: 380px;}}
  #sidebar h3{ font-size: 14px; margin-top:14px; color: #666;  }
- #sidebar hr{ width: 100%; margin: 0 auto; height: 1px; background: #ccc; border: 0; }
- * html #sidebar hr{ width: 95%; position: relative; left: -6px; color: #ccc; }
- #sidebar .contextual { margin-right: 1em; }
- #sidebar ul, ul.flat {margin: 0;  padding: 0;}
- #sidebar ul li, ul.flat li {list-style-type:none;margin: 0px 2px 0px 0px; padding: 0px 0px 0px 0px;}
- #sidebar div.wiki ul {margin:inherit; padding-left:40px;}
- #sidebar div.wiki ul li {list-style-type:inherit;}
- 
--#content { width: 75%; background-color: #fff; margin: 0px; border-right: 1px solid #ddd; padding: 6px 10px 10px 10px; z-index: 10; }
--* html #content{ width: 75%; padding-left: 0; margin-top: 0px; padding: 6px 10px 10px 10px;}
-+#content { width: 85%; background-color: #fff; margin: 0px; border-right: 1px solid #ddd; padding: 6px 10px 10px 10px; z-index: 10; }
-+* html #content{ width: 85%; padding-left: 0; margin-top: 0px; padding: 6px 10px 10px 10px;}
- html>body #content { min-height: 600px; }
- * html body #content { height: 600px; } /* IE */
- 
- #main.nosidebar #sidebar{ display: none; }
- #main.nosidebar #content{ width: auto; border-right: 0; }
- 
-@@ -1027,12 +1028,14 @@
+@@ -1089,12 +1089,14 @@
  p.percent {font-size: 80%; margin:0;}
  p.progress-info {clear: left; font-size: 80%; margin-top:-4px; color:#777;}
  

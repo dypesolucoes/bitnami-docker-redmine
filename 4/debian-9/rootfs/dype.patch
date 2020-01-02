@@ -143,25 +143,6 @@ Right base folder: C:\dype\source\redmine\redmine-3.3.0\apps\redmine\htdocs
  <%= link_to l(:button_copy), project_copy_issue_path(@project, @issue),
              :class => 'icon icon-copy' if User.current.allowed_to?(:copy_issues, @project) && Issue.allowed_target_projects.any? %>
  <%= link_to l(:button_delete), issue_path(@issue),
---- app/views/layouts/base.html.erb	2019-11-22 08:59:56.000000000 -0300
-+++ app/views/layouts/base.html.erb	2019-11-20 17:20:34.000000000 -0300
-@@ -114,13 +115,15 @@
-         <%= yield %>
-         <%= call_hook :view_layouts_base_content %>
-         <div style="clear:both;"></div>
-     </div>
- </div>
- <div id="footer">
--    Powered by <%= link_to Redmine::Info.app_name, Redmine::Info.url %> &copy; 2006-2019 Jean-Philippe Lang
-+    Powered by <%= link_to Redmine::Info.app_name, Redmine::Info.url %> &copy; 2006-2019 Jean-Philippe Lang
-+	<br /><br />
-+	<%= link_to 'Dype Updater', 'http://redmine.dype.com.br/mn/' %>
- </div>
- </div>
- 
- <div id="ajax-indicator" style="display:none;"><span><%= l(:label_loading) %></span></div>
- <div id="ajax-modal" style="display:none;"></div>
- 
 --- public/javascripts/application.js	2019-11-22 08:59:58.000000000 -0300
 +++ public/javascripts/application.js	2019-11-20 17:20:19.000000000 -0300
 @@ -1063,5 +1063,9 @@
@@ -232,3 +213,23 @@ Right base folder: C:\dype\source\redmine\redmine-3.3.0\apps\redmine\htdocs
  #content .tabs ul li {
    float:left;
    list-style-type:none;
+--- app/controllers/timelog_controller.rb
++++ app/controllers/timelog_controller.rb
+@@ -256,16 +256,13 @@
+       render_403
+       return false
+     end
+   end
+ 
+   def authorize_logging_time_for_other_users
+-    if !User.current.allowed_to?(:log_time_for_other_users, @project) && params['time_entry'].present? && params['time_entry']['user_id'].present? && params['time_entry']['user_id'].to_i != User.current.id
+-      render_error :message => l(:error_not_allowed_to_log_time_for_other_users), :status => 403
+-      return false
+-    end
++    return true
+   end
+ 
+   def find_time_entries
+     @time_entries = TimeEntry.where(:id => params[:id] || params[:ids]).
+       preload(:project => :time_entry_activities).
+       preload(:user).to_a

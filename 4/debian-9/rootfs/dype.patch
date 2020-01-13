@@ -215,21 +215,48 @@ Right base folder: C:\dype\source\redmine\redmine-3.3.0\apps\redmine\htdocs
    list-style-type:none;
 --- app/controllers/timelog_controller.rb
 +++ app/controllers/timelog_controller.rb
-@@ -256,16 +256,13 @@
-       render_403
-       return false
+@@ -293,6 +293,14 @@ class TimelogController < ApplicationController
      end
    end
  
-   def authorize_logging_time_for_other_users
--    if !User.current.allowed_to?(:log_time_for_other_users, @project) && params['time_entry'].present? && params['time_entry']['user_id'].present? && params['time_entry']['user_id'].to_i != User.current.id
--      render_error :message => l(:error_not_allowed_to_log_time_for_other_users), :status => 403
--      return false
--    end
-+    return true
++  def find_optional_project
++    if params[:project_id].present? || params[:time_entry].present? && params[:time_entry][:project_id].present?
++      project_id = params[:project_id] || params[:time_entry][:project_id]
++      find_project(project_id)
++    end
++    authorize_global
++  end
++
+   # Returns the TimeEntry scope for index and report actions
+   def time_entry_scope(options={})
+     @query.results_scope(options)
+--- test/integration/api_test/time_entries_test.rb
++++ test/integration/api_test/time_entries_test.rb
+@@ -144,6 +144,27 @@ class Redmine::ApiTest::TimeEntriesTest < Redmine::ApiTest::Base
+     assert_select 'errors error', :text => "Hours cannot be blank"
    end
  
-   def find_time_entries
-     @time_entries = TimeEntry.where(:id => params[:id] || params[:ids]).
-       preload(:project => :time_entry_activities).
-       preload(:user).to_a
++  test "POST /time_entries.xml for other user" do
++    Role.find_by_name('Manager').add_permission! :log_time_for_other_users
++
++    assert_difference 'TimeEntry.count' do
++      post(
++        '/time_entries.xml',
++        :params =>
++          {:time_entry =>
++            {:project_id => '1', :spent_on => '2010-12-02', :user_id => '3',
++             :hours => '3.5', :activity_id => '11'}},
++        :headers => credentials('jsmith'))
++    end
++    assert_response :created
++
++    assert_equal 'application/xml', @response.content_type
++
++    entry = TimeEntry.order('id DESC').first
++    assert_equal 3, entry.user_id
++    assert_equal 2, entry.author_id
++  end
++
+   test "PUT /time_entries/:id.xml with valid parameters should update time entry" do
+     assert_no_difference 'TimeEntry.count' do
+       put(

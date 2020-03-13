@@ -28,7 +28,7 @@ $.getScript('/javascripts/dype/select2/js/select2.min.js', function(){
 /////////////////////////////////
 /////////  Agrupadora   /////////
 /////////////////////////////////
-var titles = ["Atendimento", "Planejamento", "Funcionalidade"];
+var titles = ["Atendimento", "Planejamento", "Funcionalidade", "Assunto"];
 for( var i in titles ) {
 	// Título atual
 	var ctitle = titles[i];

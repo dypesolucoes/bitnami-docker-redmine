@@ -164,11 +164,11 @@ if (jQuery('.breadcrumbs:contains("Eventos"),.breadcrumbs:contains("Release ")')
 	if (sigla[1] !== undefined) {
 		var btn = jQuery('<a/>').attr('id','gotoProject').html('Ir para o site')
 			.addClass('icon').css({'background-image':'url("../images/link.png"', 'margin-left':'10px'})
-			.attr('href', 'https://intranet.dype.com.br/eventoedicao/buscaacessarurl?term='+sigla[1]).attr('target','_blank');
+			.attr('href', 'https://intranet.server.dype.com.br/eventoedicao/buscaacessarurl?term='+sigla[1]).attr('target','_blank');
 		div.append(btn);
 		var btn2 = jQuery('<a/>').attr('id','gotoIntranetFilter').html('Buscar no intranet')
 			.addClass('icon').css({'background-image':'url("../images/link.png"', 'margin-left':'10px'})
-			.attr('href', 'https://intranet.dype.com.br/evento/buscageralinstitucional?__form_signature=2aba329b1319eb46e8922191660c75c8&TERMO='+sigla[1].replace(/-/g,'%25')).attr('target','_blank');
+			.attr('href', 'https://intranet.server.dype.com.br/evento/buscageralinstitucional?__form_signature=2aba329b1319eb46e8922191660c75c8&TERMO='+sigla[1].replace(/-/g,'%25')).attr('target','_blank');
 		div.append(btn2);
 	}
 }
@@ -233,8 +233,8 @@ if (jQuery('body').hasClass('action-show') && jQuery('body').hasClass('controlle
 		var titulo = jQuery('<h3/>').html('Dype');
 		var lista = jQuery('<ul/>');
 		// Lista dos itens
-		jQuery('<a/>').html('Acessar o site').attr('href', 'https://intranet.dype.com.br/eventoedicao/buscaacessarurl?term='+sigla[1]).attr('target','_blank').appendTo(jQuery('<li/>').appendTo(lista));
-		jQuery('<a/>').html('Buscar sigla no intranet').attr('href', 'https://intranet.dype.com.br/evento/buscageralinstitucional?__form_signature=2aba329b1319eb46e8922191660c75c8&TERMO='+sigla[1].replace(/-/g,'%25')).attr('target','_blank').appendTo(jQuery('<li/>').appendTo(lista));
+		jQuery('<a/>').html('Acessar o site').attr('href', 'https://intranet.server.dype.com.br/eventoedicao/buscaacessarurl?term='+sigla[1]).attr('target','_blank').appendTo(jQuery('<li/>').appendTo(lista));
+		jQuery('<a/>').html('Buscar sigla no intranet').attr('href', 'https://intranet.server.dype.com.br/evento/buscageralinstitucional?__form_signature=2aba329b1319eb46e8922191660c75c8&TERMO='+sigla[1].replace(/-/g,'%25')).attr('target','_blank').appendTo(jQuery('<li/>').appendTo(lista));
 		// Adicionar na barra
 		lista.prependTo(sidebar);
 		titulo.prependTo(sidebar);
